@@ -1,0 +1,12 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: Community Domain Server
+  r2dbc:
+    url: r2dbc:pool:mysql://~~~~
+    username: ~~~~
+    password: ~~~~
+    #initialization-mode: always
+    port: 3306
