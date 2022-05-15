@@ -8,8 +8,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface UserAssetFactory {
-    UserAsset userAssetBuilder(String coin_id, String market, Double price, LocalDateTime updateDttm);
-//    UserAsset userAssetBuilder(String coin_id, MarketType market, Double price, LocalDateTime updateDttm);
-    UserAsset userAssetBuilder(CoinType coinType, MarketType market, Double price, LocalDateTime updateDttm);
+    UserAsset userAssetBuilder(String userId, String ticker, String market, Double price, Double volume, LocalDateTime insertDttm);
     List<UserAsset> setupListBuilder();
 }

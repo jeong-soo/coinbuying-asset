@@ -15,16 +15,24 @@ import java.time.LocalDateTime;
 @Builder
 public class UserAsset {
     @Id
+    @Column(value="asset_id")
+    private Long assetId;
+
+    @Column(value="user_id")
+    private String userId;
+
     @Column(value="ticker")
     private String ticker;
 
-    @Id
     @Column(value="market")
     private String market;
 
     @Column(value="price")
     private Double price;
 
-    @Column(value="update_dttm")
-    private LocalDateTime updateDttm;
+    @Column(value="volume")
+    private Double volume;
+
+    @Column(value="insert_dttm")
+    private LocalDateTime insertDttm;
 }

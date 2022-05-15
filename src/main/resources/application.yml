@@ -5,8 +5,8 @@ spring:
   application:
     name: Community Domain Server
   r2dbc:
-    url: r2dbc:pool:mysql://~~~~
-    username: ~~~~
-    password: ~~~~
+    url: r2dbc:pool:mysql://coinbuying.c5sgvczuoq5f.us-west-1.rds.amazonaws.com
+    username: admin
+    password: coin1234
     #initialization-mode: always
     port: 3306

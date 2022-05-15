@@ -12,22 +12,23 @@ import java.util.List;
 @Component
 public class UserAssetFactoryImpl implements UserAssetFactory{
     @Override
-    public UserAsset userAssetBuilder(String ticker, String market, Double price, LocalDateTime updateDttm) {
-        return UserAsset.builder().ticker(ticker).market(market).price(price).updateDttm(updateDttm).build();
-    }
-
-    @Override
-    public UserAsset userAssetBuilder(CoinType coinType, MarketType market, Double price, LocalDateTime updateDttm) {
-        return this.userAssetBuilder(coinType.getTicker(), market.getName(), price, updateDttm);
+    public UserAsset userAssetBuilder(String userId, String ticker, String market, Double price, Double volume, LocalDateTime insertDttm) {
+        return UserAsset.builder().ticker(ticker).market(market).price(price).volume(volume).insertDttm(insertDttm).build();
     }
 
     @Override
     public List<UserAsset> setupListBuilder() {
         return Arrays.asList(
-                this.userAssetBuilder(CoinType.BTC, MarketType.BITHUMB, 400000000.0, LocalDateTime.now()),
-                this.userAssetBuilder(CoinType.ETH, MarketType.BITHUMB, 400000000.0, LocalDateTime.now()),
-                this.userAssetBuilder(CoinType.XRP, MarketType.BITHUMB, 400000000.0, LocalDateTime.now()),
-                this.userAssetBuilder(CoinType.EOS, MarketType.BITHUMB, 400000000.0, LocalDateTime.now())
+                this.userAssetBuilder("test", CoinType.BTC.getTicker(), MarketType.BITHUMB.getName(), 400000000.0, 1.2, LocalDateTime.now()),
+                this.userAssetBuilder("test", CoinType.ETH.getTicker(), MarketType.BITHUMB.getName(), 400000000.0, 1.2, LocalDateTime.now()),
+                this.userAssetBuilder("test", CoinType.DOGE.getTicker(), MarketType.BITHUMB.getName(), 400000000.0, 1.2, LocalDateTime.now()),
+                this.userAssetBuilder("test", CoinType.EOS.getTicker(), MarketType.BITHUMB.getName(), 400000000.0, 1.2, LocalDateTime.now()),
+                this.userAssetBuilder("test", CoinType.XRP.getTicker(), MarketType.BITHUMB.getName(), 400000000.0, 1.2, LocalDateTime.now()),
+                this.userAssetBuilder("test", CoinType.BTC.getTicker(), MarketType.UPBIT.getName(), 400000000.0, 1.2, LocalDateTime.now()),
+                this.userAssetBuilder("test", CoinType.ETH.getTicker(), MarketType.UPBIT.getName(), 400000000.0, 1.2, LocalDateTime.now()),
+                this.userAssetBuilder("test", CoinType.DOGE.getTicker(), MarketType.UPBIT.getName(), 400000000.0, 1.2, LocalDateTime.now()),
+                this.userAssetBuilder("test", CoinType.EOS.getTicker(), MarketType.UPBIT.getName(), 400000000.0, 1.2, LocalDateTime.now()),
+                this.userAssetBuilder("test", CoinType.XRP.getTicker(), MarketType.UPBIT.getName(), 400000000.0, 1.2, LocalDateTime.now())
         );
     }
 }
