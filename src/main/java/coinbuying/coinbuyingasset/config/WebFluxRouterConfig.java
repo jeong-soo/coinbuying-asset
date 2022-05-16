@@ -19,8 +19,8 @@ public class WebFluxRouterConfig implements WebFluxConfigurer {
     @Bean
     public RouterFunction<ServerResponse> boardsRouterBuilder(AssetHandler assetHandler) {
         return RouterFunctions.route()
-                .path("/boards", builder -> builder
-                        .GET("/{boardType}", assetHandler::getPostsByBoardType)
+                .path("/wallet", builder -> builder
+                        .GET("/{userId}", assetHandler::getWallet)
                         //.GET("/{boardType}/{postType}", postHandler::getPostsByBoardTypeAndPostType)
                 ).build();
     }
