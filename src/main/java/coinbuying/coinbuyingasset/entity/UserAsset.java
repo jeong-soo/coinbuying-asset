@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Table(value="user_asset")
@@ -19,7 +20,7 @@ public class UserAsset {
     private Long assetId;
 
     @Column(value="user_id")
-    private String userId;
+    private int userId;
 
     @Column(value="ticker")
     private String ticker;
@@ -34,5 +35,5 @@ public class UserAsset {
     private Double volume;
 
     @Column(value="insert_dttm")
-    private LocalDateTime insertDttm;
+    private LocalDate insertDttm;
 }

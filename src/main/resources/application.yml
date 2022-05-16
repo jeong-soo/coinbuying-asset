@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: Community Domain Server
+    name: asset Domain Server
   r2dbc:
     url: r2dbc:pool:mysql://coinbuying.c5sgvczuoq5f.us-west-1.rds.amazonaws.com/asset_manage
     username: admin
