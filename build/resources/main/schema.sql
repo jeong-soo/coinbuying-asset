@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS user_asset;
+
 CREATE TABLE IF NOT EXISTS user_asset (
     asset_id INT(10) AUTO_INCREMENT PRIMARY KEY NOT NULL COMMENT 'asset id',
     user_id INT(10) NOT NULL COMMENT 'user id',
