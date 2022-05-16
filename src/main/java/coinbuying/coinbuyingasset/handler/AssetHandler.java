@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -30,7 +31,7 @@ public class AssetHandler {
                 insert_dttm DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         );*/
 
-        Mono<UserAsset> response = assetService.getWallet(request)//postService.findContent(request)
+        Flux<UserAsset> response = assetService.getWallet(request)//postService.findContent(request)
                         .subscribeOn(Schedulers.boundedElastic());
 
         return ok()
@@ -92,17 +93,6 @@ public class AssetHandler {
 
         Mono<Object> response = null; //postService.getFavorites(request)
          //       .subscribeOn(Schedulers.boundedElastic());
-
-        return ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response, Object.class);
-    }
-
-    public Mono<ServerResponse> downloadFile(ServerRequest request) {
-
-        Mono<Object> response = null;
-        /*Mono<Object> response = postService.findContent(request)
-                .subscribeOn(Schedulers.boundedElastic());*/
 
         return ok()
                 .contentType(MediaType.APPLICATION_JSON)
