@@ -29,6 +29,12 @@ dependencies {
 	runtimeOnly 'dev.miku:r2dbc-mysql'
 	runtimeOnly 'mysql:mysql-connector-java'
 
+	implementation group: 'com.auth0', name: 'java-jwt', version: '3.19.2'
+	implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+	// https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
+	implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+
+
 	// object mapper lombok
 	implementation 'org.mapstruct:mapstruct:1.4.2.Final'
 	implementation 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
@@ -36,6 +42,10 @@ dependencies {
 	annotationProcessor "org.mapstruct:mapstruct-processor:1.4.2.Final"
 	annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
 	annotationProcessor "org.projectlombok:lombok:1.18.22"
+
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.2' // jwt 사용
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2'
 }
 
 dependencyManagement {
