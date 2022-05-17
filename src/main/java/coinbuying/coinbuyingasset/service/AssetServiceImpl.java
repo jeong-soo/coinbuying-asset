@@ -89,23 +89,24 @@ public class AssetServiceImpl implements AssetService {
             HttpEntity entity = response.getEntity();
 
             String upbitWalletArray =  EntityUtils.toString(entity, "UTF-8");
+            System.out.println(upbitWalletArray);
             ObjectMapper objectMapper = new ObjectMapper();
             List<Object> upbitWalletList = objectMapper.readValue(upbitWalletArray, new TypeReference<>() {});
 
-            for(int i=0; i<upbitWalletList.size();i++){
-                Map<String, Object> map = (Map<String,Object>) upbitWalletList.get(i);
+            for(int idx=0; idx<upbitWalletList.size();idx++){
+                Map<String, Object> map = (Map<String,Object>) upbitWalletList.get(idx);
                 System.out.println(map.get("currency").toString());
-                System.out.println(Double.parseDouble(map.get("balance").toString()));
-                System.out.println(Double.parseDouble(map.get("locked").toString()));
-                System.out.println(Integer.parseInt(map.get("avg_buy_price").toString()));
-                System.out.println(Boolean.parseBoolean(map.get("avg_buy_price_modified").toString()));
+                System.out.println(map.get("balance").toString());
+                System.out.println(map.get("locked").toString());
+                System.out.println(map.get("avg_buy_price").toString());
+                System.out.println(map.get("avg_buy_price_modified").toString());
                 System.out.println(map.get("unit_currency").toString());
 
             }
 
-            System.out.println(EntityUtils.toString(entity, "UTF-8"));
 
-            retVal = EntityUtils.toString(entity, "UTF-8");
+
+            retVal = upbitWalletArray;
         } catch (IOException e) {
             e.printStackTrace();
         } 
