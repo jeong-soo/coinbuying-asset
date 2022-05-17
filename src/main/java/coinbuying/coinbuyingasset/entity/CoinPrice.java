@@ -3,26 +3,20 @@ package coinbuying.coinbuyingasset.entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Table(value="user_asset")
+@Table(value="coin_price")
 @AllArgsConstructor
 @Getter
 @Builder
-@ToString
-public class UserAsset {
+public class CoinPrice {
     @Id
-    @Column(value="asset_id")
-    private Long assetId;
-
-    @Column(value="user_id")
-    private int userId;
+    @Column(value="price_id")
+    private Long priceId;
 
     @Column(value="ticker")
     private String ticker;
@@ -33,9 +27,6 @@ public class UserAsset {
     @Column(value="price")
     private Double price;
 
-    @Column(value="volume")
-    private Double volume;
-
-    @Column(value="insert_dt")
-    private LocalDate insertDt;
+    @Column(value="dttm")
+    private LocalDateTime dttm;
 }

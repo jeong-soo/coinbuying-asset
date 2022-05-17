@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS user_asset (
     market VARCHAR(20) NOT NULL COMMENT 'coin market',
     price DOUBLE(20,5) NOT NULL COMMENT 'coin price',
     volume DOUBLE(20,5) NOT NULL COMMENT 'coin volume',
-    insert_dttm DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    insert_dt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
