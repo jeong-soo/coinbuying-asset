@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserAssetOne {
 
-    private Long assetId;
-
     private String ticker;
 
     private String market;

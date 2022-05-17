@@ -37,6 +37,4 @@ public class R2dbcConfig {
             ).blockLast();
         };
     }
-
-
 }
