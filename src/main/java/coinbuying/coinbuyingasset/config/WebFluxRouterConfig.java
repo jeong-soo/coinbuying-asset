@@ -21,11 +21,11 @@ public class WebFluxRouterConfig implements WebFluxConfigurer {
         return RouterFunctions.route()
                 .path("/wallet", builder -> builder
                         .GET("/{userId}", assetHandler::getWallet)
-                        //.GET("/{boardType}/{postType}", postHandler::getPostsByBoardTypeAndPostType)
+                        .GET("/market/upbitAccount", assetHandler::getUpbitWallet)
                 ).build();
     }
 
-    @Bean
+    /*@Bean
     public RouterFunction<ServerResponse> postsRouterBuilder(AssetHandler assetHandler) {
         return RouterFunctions.route()
                 .path("/posts", builder -> builder
@@ -37,6 +37,6 @@ public class WebFluxRouterConfig implements WebFluxConfigurer {
                         //.GET("/file", postHandler::downloadFile)
 
                 ).build();
-    }
+    }*/
 
 }

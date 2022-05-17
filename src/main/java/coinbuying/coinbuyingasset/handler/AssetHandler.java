@@ -5,11 +5,11 @@ import coinbuying.coinbuyingasset.dto.response.UserAssetResponse;
 import coinbuying.coinbuyingasset.entity.UserAsset;
 import coinbuying.coinbuyingasset.service.AssetService;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.JSONObject;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -31,63 +31,15 @@ public class AssetHandler {
                 .body(response, UserAsset.class);
     }
 
-    public Mono<ServerResponse> postsRegistration(ServerRequest request) {
 
-        Mono<Object> response = null;//postService.postsRegistration(request)
-                //.subscribeOn(Schedulers.boundedElastic());
+    public Mono<ServerResponse> getUpbitWallet(ServerRequest request){
 
-        return ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response, Object.class);
-    }
-
-    public Mono<ServerResponse> postsModify(ServerRequest request) {
-
-        Mono<Object> response = null;//postService.postsModify(request)
-               // .subscribeOn(Schedulers.boundedElastic());
+        String response = assetService.getUpbitWallet(request);
+        //JSONObject personalWallet = assetService.getUpbitWallet(request);
 
         return ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response, Object.class);
-    }
-
-    public Mono<ServerResponse> modifyPostsShowYn(ServerRequest request) {
-
-        Mono<Object> response = null; //postService.modifyPostsShowYn(request)
-                //.subscribeOn(Schedulers.boundedElastic());
-
-        return ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response, Object.class);
-    }
-
-    public Mono<ServerResponse> getPostsByBoardType(ServerRequest request) {
-
-        Mono<Object> response = null;//postService.getPostsByBoardType(request)
-             //   .subscribeOn(Schedulers.boundedElastic());
-
-        return ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response, Object.class);
-    }
-
-    public Mono<ServerResponse> getPostsByBoardTypeAndPostType(ServerRequest request) {
-
-        Mono<Object> response = null;//postService.getPostsByBoardTypeAndPostType(request)
-                //.subscribeOn(Schedulers.boundedElastic());
-
-        return ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response, Object.class);
-    }
-
-    public Mono<ServerResponse> getFavorites(ServerRequest request) {
-
-        Mono<Object> response = null; //postService.getFavorites(request)
-         //       .subscribeOn(Schedulers.boundedElastic());
-
-        return ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response, Object.class);
+                //.contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.ALL)
+                .body(response, String.class);
     }
 }
