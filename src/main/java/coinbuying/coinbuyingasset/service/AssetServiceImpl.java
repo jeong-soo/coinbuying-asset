@@ -7,9 +7,9 @@ import coinbuying.coinbuyingasset.dto.response.UserAssetResponse;
 
 import coinbuying.coinbuyingasset.entity.MarketType;
 import coinbuying.coinbuyingasset.entity.UserAsset;
+import coinbuying.coinbuyingasset.repository.CoinPriceRepository;
 import coinbuying.coinbuyingasset.repository.R2dbcEntityAssetRepository;
 import coinbuying.coinbuyingasset.repository.UserAssetRepository;
-import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,30 +30,28 @@ import java.util.*;
 
 
 @Service
-@RequiredArgsConstructor
 public class AssetServiceImpl implements AssetService {
-    UserAssetRepository userAssetRepository;
-
-    R2dbcEntityAssetRepository r2dbcAssetRepo;
+    private final UserAssetRepository userAssetRepository;
+    private final R2dbcEntityAssetRepository r2dbcAssetRepo;
+    private final CoinPriceRepository coinPriceRepository;
 
     @Autowired
-    public AssetServiceImpl(UserAssetRepository userAssetRepository, R2dbcEntityAssetRepository r2dbcAssetRepo) {
+    public AssetServiceImpl(UserAssetRepository userAssetRepository, R2dbcEntityAssetRepository r2dbcAssetRepo, CoinPriceRepository coinPriceRepository) {
         this.userAssetRepository = userAssetRepository;
         this.r2dbcAssetRepo = r2dbcAssetRepo;
+        this.coinPriceRepository = coinPriceRepository;
     }
 
     @Override
     public Mono<UserAssetResponse> getWallet(ServerRequest serverRequest) {
         int userId = Integer.parseInt(serverRequest.pathVariable("userId"));
 
-         return userAssetRepository.findByUserIdAndInsertDt(userId, LocalDate.now())
-                 .flatMap(asset -> {
-                     double total = asset.getPrice() * asset.getVolume();
-                     return Mono.just(new UserAssetOne(asset.getTicker(), asset.getMarket(), asset.getPrice(), asset.getVolume(), total));
-                 }).collectList()
-                 .map(p->{
-                     return UserAssetResponse.CreateUserAssetResponse(LocalDate.now(), p);
-                 });
+        return userAssetRepository.findByUserIdAndInsertDt(userId, LocalDate.now())
+                .flatMap(asset -> {
+                    double total = asset.getPrice() * asset.getVolume();
+                    return Mono.just(new UserAssetOne(asset.getTicker(), asset.getMarket(), asset.getPrice(), asset.getVolume(), total));
+                }).collectList()
+                .map(p -> UserAssetResponse.CreateUserAssetResponse(LocalDate.now(), p));
     }
 
     @Override
@@ -84,37 +82,63 @@ public class AssetServiceImpl implements AssetService {
                     UpbitWalletData res = new UpbitWalletData();
                     res.setPriceDatas(priceDatas);
                     res.setUserId(123123);
-                    return res; });
+                    return res;
+                });
     }
 
     @Override
-    public void updateWallet(UpbitWalletData upbitWalletData) {
+    public Flux<UserAsset> updateWalletDbAndMapCoinPrice(UpbitWalletData upbitWalletData) {
         Arrays.sort(upbitWalletData.getPriceDatas(), (x, y) -> x.getCurrency().compareTo(y.getCurrency()));
         List<String> tickers = new ArrayList<>();
-        Map<String, UpbitWalletCoinPriceDataResponse> priceMap = new HashMap<>();
-        for(UpbitWalletCoinPriceDataResponse data : upbitWalletData.getPriceDatas()) {
+        HashMap<String, UpbitWalletCoinPriceDataResponse> priceMap = new HashMap<>();
+        for (UpbitWalletCoinPriceDataResponse data : upbitWalletData.getPriceDatas()) {
             tickers.add(data.getCurrency());
+            priceMap.put(data.getCurrency(), data);
         }
-        userAssetRepository.findByUserIdAndMarketAndInsertDt(
+        Flux<UserAsset> selectCoinPriceFlux =
+                coinPriceRepository.findByTickerInAndDttmBetween(tickers, LocalDate.now(), LocalDate.now().plusDays(1))
+                        .map(coinPrice -> UserAsset.builder()
+                                .ticker(coinPrice.getTicker())
+                                .price(coinPrice.getPrice())
+                                .build());
+        Flux<UserAsset> selectUserAssetFlux = userAssetRepository.findByUserIdAndMarketAndInsertDt(
                 upbitWalletData.getUserId(),
                 MarketType.UPBIT.getName(),
                 LocalDate.now()
-        )
-                .filter(x -> priceMap.containsKey(x.getTicker()))
-                .map(x -> {
-                    UpbitWalletCoinPriceDataResponse data = priceMap.get(x.getTicker());
-                    return UserAsset.builder()
-                            .assetId(x.getAssetId())
-                            .userId(x.getUserId())
-                            .ticker(data.getCurrency())
-                            .market(MarketType.UPBIT.getName())
-                            .price(data.getAvg_buy_price())
-                            .volume(data.getBalance())
-                            .insertDt(LocalDate.now()).build();
+        );
+        return Flux.merge(selectUserAssetFlux, selectCoinPriceFlux)
+                .groupBy(userAsset -> userAsset.getTicker())
+                .flatMap(groupedFlux -> groupedFlux.reduce((x, y) -> {
+                    UserAsset wallet = x, price = y;
+                    if (x.getAssetId() == null) {
+                        wallet = y; price = x;
+                    }
+                    UpbitWalletCoinPriceDataResponse upbitWalletCoinPriceDataResponse = priceMap.get(wallet.getTicker());
+                    return UserAsset.builder().assetId(wallet.getAssetId())
+                            .ticker(wallet.getTicker())
+                            .volume(upbitWalletCoinPriceDataResponse.getBalance())
+                            .insertDt(LocalDate.now())
+                            .price(price.getPrice()).build();
+                }))
+                .map(userAsset -> UserAsset.builder().assetId(userAsset.getAssetId())
+                        .userId(upbitWalletData.getUserId())
+                        .price(userAsset.getPrice())
+                        .volume(userAsset.getVolume())
+                        .ticker(userAsset.getTicker())
+                        .insertDt(userAsset.getInsertDt())
+                        .market(MarketType.UPBIT.getName()).build())
+                .map(userAsset -> {
+                    if(userAsset.getVolume() == null || !priceMap.containsKey(userAsset.getTicker()))
+                        return UserAsset.builder().assetId(userAsset.getAssetId())
+                                .userId(upbitWalletData.getUserId())
+                                .price(userAsset.getPrice())
+                                .volume(0.0)
+                                .ticker(userAsset.getTicker())
+                                .insertDt(userAsset.getInsertDt())
+                                .market(MarketType.UPBIT.getName()).build();
+                    return userAsset;
                 })
-                .doOnNext(userAssetRepository::save)
-                .doOnEach(System.out::println)
-                .doOnError(e -> e.printStackTrace())
-                .subscribe(x -> tickers.remove(x.getTicker()));
+                .doOnNext(userAsset -> userAssetRepository.save(userAsset).subscribe())
+                .filter(userAsset -> userAsset.getVolume() > 0);
     }
 }
