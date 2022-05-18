@@ -33,7 +33,7 @@ public class AssetHandler {
     }
 
     public Mono<ServerResponse> getWallet(ServerRequest request) {
-
+        Integer userId = Integer.parseInt(request.pathVariable("userId"));
         Mono<UserAssetResponse> response = assetService.getWallet(request)//postService.findContent(request)
                 .subscribeOn(Schedulers.boundedElastic());
 
@@ -44,7 +44,8 @@ public class AssetHandler {
 
 
     public Mono<ServerResponse> getUpbitWallet(ServerRequest request) {
-        Mono<UserAssetResponse> upbitWalletDataMono = assetService.getUpbitWallet(request)
+        Integer userId = Integer.parseInt(request.pathVariable("userId"));
+        Mono<UserAssetResponse> upbitWalletDataMono = assetService.getUpbitWallet(request, userId)
                 .map(assetService::updateWalletDbAndMapCoinPrice)
                 .flatMap(userAssetFlux -> userAssetFlux.collectList())
                 .map(userAssets -> {
