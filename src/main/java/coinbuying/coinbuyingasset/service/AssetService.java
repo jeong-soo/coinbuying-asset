@@ -10,9 +10,9 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 public interface AssetService {
-
     Mono<UserAssetResponse> getWallet(ServerRequest serverRequest);
-    public Mono<UpbitWalletData> getUpbitWallet(ServerRequest serverRequest);
+
+    public Mono<UpbitWalletData> getUpbitWallet(ServerRequest serverRequest, Integer userId);
 
     public Flux<UserAsset> updateWalletDbAndMapCoinPrice(UpbitWalletData responses);
 }

@@ -55,7 +55,7 @@ public class AssetServiceImpl implements AssetService {
     }
 
     @Override
-    public Mono<UpbitWalletData> getUpbitWallet(ServerRequest serverRequest) {
+    public Mono<UpbitWalletData> getUpbitWallet(ServerRequest serverRequest, Integer userId) {
         String accessKey = "sZiMJou0evyRRV3GB6Nrtgo1a9fuEU5OnSjBHRqM";//System.getenv("UPBIT_OPEN_API_ACCESS_KEY");
         String secretKey = "898Usfgbf54lJDiVs7nBL3mHxLElrBoZRAPnW7dx";//System.getenv("UPBIT_OPEN_API_SECRET_KEY");
         String serverUrl = "https://api.upbit.com";//System.getenv("UPBIT_OPEN_API_SERVER_URL");
@@ -81,7 +81,7 @@ public class AssetServiceImpl implements AssetService {
                 .map(priceDatas -> {
                     UpbitWalletData res = new UpbitWalletData();
                     res.setPriceDatas(priceDatas);
-                    res.setUserId(123123);
+                    res.setUserId(userId);
                     return res;
                 });
     }
