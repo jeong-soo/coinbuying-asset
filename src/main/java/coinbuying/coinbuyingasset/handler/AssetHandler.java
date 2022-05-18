@@ -2,15 +2,12 @@ package coinbuying.coinbuyingasset.handler;
 
 
 import coinbuying.coinbuyingasset.dto.response.UpbitWalletCoinPriceDataResponse;
-import coinbuying.coinbuyingasset.dto.response.UpbitWalletData;
 import coinbuying.coinbuyingasset.dto.response.UserAssetOne;
 import coinbuying.coinbuyingasset.dto.response.UserAssetResponse;
-import coinbuying.coinbuyingasset.entity.CoinPrice;
 import coinbuying.coinbuyingasset.entity.MarketType;
 import coinbuying.coinbuyingasset.entity.UserAsset;
 import coinbuying.coinbuyingasset.service.AssetService;
 import coinbuying.coinbuyingasset.service.CoinPriceService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -29,18 +26,16 @@ import static org.springframework.web.reactive.function.server.ServerResponse.ok
 @Component
 public class AssetHandler {
     private final AssetService assetService;
-    private final CoinPriceService coinPriceService;
 
     @Autowired
-    public AssetHandler(AssetService assetService, CoinPriceService coinPriceService) {
+    public AssetHandler(AssetService assetService) {
         this.assetService = assetService;
-        this.coinPriceService = coinPriceService;
     }
 
     public Mono<ServerResponse> getWallet(ServerRequest request) {
 
         Mono<UserAssetResponse> response = assetService.getWallet(request)//postService.findContent(request)
-                        .subscribeOn(Schedulers.boundedElastic());
+                .subscribeOn(Schedulers.boundedElastic());
 
         return ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -48,19 +43,19 @@ public class AssetHandler {
     }
 
 
-    public Mono<ServerResponse> getUpbitWallet(ServerRequest request){
-
+    public Mono<ServerResponse> getUpbitWallet(ServerRequest request) {
         Mono<UserAssetResponse> upbitWalletDataMono = assetService.getUpbitWallet(request)
-                .doOnNext(assetService::updateWallet)
-                .map(upbitWalletData -> {
+                .map(assetService::updateWalletDbAndMapCoinPrice)
+                .flatMap(userAssetFlux -> userAssetFlux.collectList())
+                .map(userAssets -> {
                     List<UserAssetOne> userAssetOnes = new ArrayList<>();
-                    for(UpbitWalletCoinPriceDataResponse priceData : upbitWalletData.getPriceDatas()) {
+                    for(UserAsset userAsset : userAssets) {
                         userAssetOnes.add(UserAssetOne.builder()
-                                .ticker(priceData.getCurrency())
-                                .market(MarketType.UPBIT.getName())
-                                .volume(priceData.getBalance())
-                                .price(100000.0)
-                                .total(100000.0 * priceData.getBalance()).build());
+                                .ticker(userAsset.getTicker())
+                                .market(userAsset.getMarket())
+                                .price(userAsset.getPrice())
+                                .volume(userAsset.getVolume())
+                                .total(userAsset.getPrice() * userAsset.getVolume()).build());
                     }
                     return UserAssetResponse.CreateUserAssetResponse(LocalDate.now(), userAssetOnes);
                 });
