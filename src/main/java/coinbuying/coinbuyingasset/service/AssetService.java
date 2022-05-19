@@ -1,6 +1,5 @@
 package coinbuying.coinbuyingasset.service;
 
-import coinbuying.coinbuyingasset.dto.response.UpbitWalletData;
 import coinbuying.coinbuyingasset.dto.response.UserAssetResponse;
 import coinbuying.coinbuyingasset.entity.UserAsset;
 import reactor.core.publisher.Flux;
@@ -11,7 +10,7 @@ import java.util.List;
 public interface AssetService<T> {
     public Mono<T> getWallet(Integer userId);
 
-    public Flux<UserAsset> getMeargeRealTimeData(T responses);
+    public Flux<UserAsset> realTimePriceInjection(T responses);
 
     public void saveAssetData(Flux<UserAsset> userAssets);
 

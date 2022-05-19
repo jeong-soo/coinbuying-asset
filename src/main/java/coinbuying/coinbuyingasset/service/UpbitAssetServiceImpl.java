@@ -28,12 +28,12 @@ import java.util.*;
 
 
 @Service
-public class AssetServiceImpl implements AssetService<UpbitWalletData> {
+public class UpbitAssetServiceImpl implements AssetService<UpbitWalletData> {
     private final UserAssetRepository userAssetRepository;
     private final CoinPriceRepository coinPriceRepository;
 
     @Autowired
-    public AssetServiceImpl(UserAssetRepository userAssetRepository, CoinPriceRepository coinPriceRepository) {
+    public UpbitAssetServiceImpl(UserAssetRepository userAssetRepository, CoinPriceRepository coinPriceRepository) {
         this.userAssetRepository = userAssetRepository;
         this.coinPriceRepository = coinPriceRepository;
     }
@@ -71,7 +71,7 @@ public class AssetServiceImpl implements AssetService<UpbitWalletData> {
     }
 
     @Override
-    public Flux<UserAsset> getMeargeRealTimeData(UpbitWalletData upbitWalletData) {
+    public Flux<UserAsset> realTimePriceInjection(UpbitWalletData upbitWalletData) {
         Arrays.sort(upbitWalletData.getPriceDatas(), (x, y) -> x.getCurrency().compareTo(y.getCurrency()));
         List<String> tickers = new ArrayList<>();
         HashMap<String, UpbitWalletCoinPriceDataResponse> priceMap = new HashMap<>();

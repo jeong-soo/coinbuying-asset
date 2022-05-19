@@ -24,7 +24,7 @@ public class AssetHandler {
     public Mono<ServerResponse> getWallet(ServerRequest request) {
         final Integer userId = Integer.parseInt(request.pathVariable("userId"));
         Mono<UserAssetResponse> upbitWalletDataMono = upbitAssetService.getWallet(userId)
-                .map(upbitAssetService::getMeargeRealTimeData)
+                .map(upbitAssetService::realTimePriceInjection)
                 .doOnNext(upbitAssetService::saveAssetData)
                 .map(upbitAssetService::addFilterUserShowData)
                 .flatMap(userAssetFlux -> userAssetFlux.collectList())
