@@ -20,8 +20,8 @@ public class WebFluxRouterConfig implements WebFluxConfigurer {
     public RouterFunction<ServerResponse> boardsRouterBuilder(AssetHandler assetHandler) {
         return RouterFunctions.route()
                 .path("/wallet", builder -> builder
-                        .GET("/{userId}", assetHandler::getUpbitWallet)
-                        .GET("/market/upbitAccount", assetHandler::getUpbitWallet)
+                        .GET("/{userId}", assetHandler::getWallet)
+                        .GET("/market/upbitAccount", assetHandler::getWallet)
                 ).build();
     }
 

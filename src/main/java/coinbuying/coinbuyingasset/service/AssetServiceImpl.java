@@ -8,7 +8,6 @@ import coinbuying.coinbuyingasset.dto.response.UserAssetResponse;
 import coinbuying.coinbuyingasset.entity.MarketType;
 import coinbuying.coinbuyingasset.entity.UserAsset;
 import coinbuying.coinbuyingasset.repository.CoinPriceRepository;
-import coinbuying.coinbuyingasset.repository.R2dbcEntityAssetRepository;
 import coinbuying.coinbuyingasset.repository.UserAssetRepository;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.server.ServerRequest;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,32 +28,18 @@ import java.util.*;
 
 
 @Service
-public class AssetServiceImpl implements AssetService {
+public class AssetServiceImpl implements AssetService<UpbitWalletData> {
     private final UserAssetRepository userAssetRepository;
-    private final R2dbcEntityAssetRepository r2dbcAssetRepo;
     private final CoinPriceRepository coinPriceRepository;
 
     @Autowired
-    public AssetServiceImpl(UserAssetRepository userAssetRepository, R2dbcEntityAssetRepository r2dbcAssetRepo, CoinPriceRepository coinPriceRepository) {
+    public AssetServiceImpl(UserAssetRepository userAssetRepository, CoinPriceRepository coinPriceRepository) {
         this.userAssetRepository = userAssetRepository;
-        this.r2dbcAssetRepo = r2dbcAssetRepo;
         this.coinPriceRepository = coinPriceRepository;
     }
 
     @Override
-    public Mono<UserAssetResponse> getWallet(ServerRequest serverRequest) {
-        int userId = Integer.parseInt(serverRequest.pathVariable("userId"));
-
-        return userAssetRepository.findByUserIdAndInsertDt(userId, LocalDate.now())
-                .flatMap(asset -> {
-                    double total = asset.getPrice() * asset.getVolume();
-                    return Mono.just(new UserAssetOne(asset.getTicker(), asset.getMarket(), asset.getPrice(), asset.getVolume(), total));
-                }).collectList()
-                .map(p -> UserAssetResponse.CreateUserAssetResponse(LocalDate.now(), p));
-    }
-
-    @Override
-    public Mono<UpbitWalletData> getUpbitWallet(ServerRequest serverRequest, Integer userId) {
+    public Mono<UpbitWalletData> getWallet(Integer userId) {
         String accessKey = "sZiMJou0evyRRV3GB6Nrtgo1a9fuEU5OnSjBHRqM";//System.getenv("UPBIT_OPEN_API_ACCESS_KEY");
         String secretKey = "898Usfgbf54lJDiVs7nBL3mHxLElrBoZRAPnW7dx";//System.getenv("UPBIT_OPEN_API_SECRET_KEY");
         String serverUrl = "https://api.upbit.com";//System.getenv("UPBIT_OPEN_API_SERVER_URL");
@@ -87,7 +71,7 @@ public class AssetServiceImpl implements AssetService {
     }
 
     @Override
-    public Flux<UserAsset> updateWalletDbAndMapCoinPrice(UpbitWalletData upbitWalletData) {
+    public Flux<UserAsset> getMeargeRealTimeData(UpbitWalletData upbitWalletData) {
         Arrays.sort(upbitWalletData.getPriceDatas(), (x, y) -> x.getCurrency().compareTo(y.getCurrency()));
         List<String> tickers = new ArrayList<>();
         HashMap<String, UpbitWalletCoinPriceDataResponse> priceMap = new HashMap<>();
@@ -137,8 +121,30 @@ public class AssetServiceImpl implements AssetService {
                                 .insertDt(userAsset.getInsertDt())
                                 .market(MarketType.UPBIT.getName()).build();
                     return userAsset;
-                })
-                .doOnNext(userAsset -> userAssetRepository.save(userAsset).subscribe())
-                .filter(userAsset -> userAsset.getVolume() > 0);
+                });
+    }
+
+    @Override
+    public void saveAssetData(Flux<UserAsset> userAssetFlux) {
+        userAssetFlux.doOnNext(userAsset -> userAssetRepository.save(userAsset).subscribe());
+    }
+
+    @Override
+    public Flux<UserAsset> addFilterUserShowData(Flux<UserAsset> userAssetFlux) {
+        return userAssetFlux.filter(userAsset -> userAsset.getVolume() > 0);
+    }
+
+    @Override
+    public UserAssetResponse userAssetsToUserAssetResponse(List<UserAsset> userAssets) {
+        List<UserAssetOne> userAssetOnes = new ArrayList<>();
+        for(UserAsset userAsset : userAssets) {
+            userAssetOnes.add(UserAssetOne.builder()
+                    .ticker(userAsset.getTicker())
+                    .market(userAsset.getMarket())
+                    .price(userAsset.getPrice())
+                    .volume(userAsset.getVolume())
+                    .total(userAsset.getPrice() * userAsset.getVolume()).build());
+        }
+        return UserAssetResponse.CreateUserAssetResponse(LocalDate.now(), userAssetOnes);
     }
 }
