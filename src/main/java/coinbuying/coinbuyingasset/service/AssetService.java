@@ -1,18 +1,20 @@
 package coinbuying.coinbuyingasset.service;
 
-import coinbuying.coinbuyingasset.dto.response.UpbitWalletData;
 import coinbuying.coinbuyingasset.dto.response.UserAssetResponse;
 import coinbuying.coinbuyingasset.entity.UserAsset;
-import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public interface AssetService {
-    Mono<UserAssetResponse> getWallet(ServerRequest serverRequest);
+public interface AssetService<T> {
+    public Mono<T> getWallet(Integer userId);
 
-    public Mono<UpbitWalletData> getUpbitWallet(ServerRequest serverRequest, Integer userId);
+    public Flux<UserAsset> realTimePriceInjection(T responses);
 
-    public Flux<UserAsset> updateWalletDbAndMapCoinPrice(UpbitWalletData responses);
+    public void saveAssetData(Flux<UserAsset> userAssets);
+
+    public Flux<UserAsset> addFilterUserShowData(Flux<UserAsset> userAssetFlux);
+
+    public UserAssetResponse userAssetsToUserAssetResponse(List<UserAsset> userAssets);
 }
