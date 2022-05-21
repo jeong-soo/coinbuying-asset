@@ -44,7 +44,7 @@ public class AssetHandler {
                     List<UserAssetOne> list = new LinkedList<>();
                     for (UserAssetOne userAssetOne : x.getData()) list.add(userAssetOne);
                     for (UserAssetOne userAssetOne : y.getData()) list.add(userAssetOne);
-                    return new UserAssetResponse(x.getInsertDt(), list);
+                    return UserAssetResponse.createUserAssetResponse(x.getInsertDt(), list);
                 });
 
         return ok().contentType(MediaType.APPLICATION_JSON).body(collectUserAssetResponseMono, UserAssetResponse.class);

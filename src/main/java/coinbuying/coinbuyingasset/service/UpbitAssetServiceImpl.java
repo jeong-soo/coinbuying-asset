@@ -145,7 +145,7 @@ public class UpbitAssetServiceImpl implements AssetService<UpbitWalletData> {
 
     @Override
     public UserAssetResponse userAssetsToUserAssetResponse(List<UserAsset> userAssets) {
-        return UserAssetResponse.CreateUserAssetResponse(LocalDate.now(),
+        return UserAssetResponse.createUserAssetResponse(LocalDate.now(),
                 userAssets.parallelStream()
                         .map(userAsset -> UserAssetOne.builder()
                                 .ticker(userAsset.getTicker())
