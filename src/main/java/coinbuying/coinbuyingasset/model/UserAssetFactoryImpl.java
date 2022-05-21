@@ -22,16 +22,16 @@ public class UserAssetFactoryImpl implements UserAssetFactory{
     @Override
     public List<UserAsset> setupListBuilder() {
         return Arrays.asList(
-                this.userAssetBuilder(123123, "APENFT", MarketType.BITHUMB.getName(), 100000000.0, 1.2, LocalDate.now()),
-                this.userAssetBuilder(123123, "BTT", MarketType.BITHUMB.getName(), 100000000.0, 1.2, LocalDate.now()),
-                this.userAssetBuilder(123123, "ETH", MarketType.BITHUMB.getName(), 100000000.0, 1.2, LocalDate.now()),
-                this.userAssetBuilder(123123, "KRW", MarketType.BITHUMB.getName(), 100000000.0, 1.2, LocalDate.now()),
-                this.userAssetBuilder(123123, "LINK", MarketType.BITHUMB.getName(), 100000000.0, 1.2, LocalDate.now()),
-                this.userAssetBuilder(123123, "SGB", MarketType.UPBIT.getName(), 100000000.0, 1.2, LocalDate.now()),
-                this.userAssetBuilder(123123, "USDT", MarketType.UPBIT.getName(), 100000000.0, 1.2, LocalDate.now()),
-                this.userAssetBuilder(123123, "WIN", MarketType.UPBIT.getName(), 100000000.0, 1.2, LocalDate.now()),
-                this.userAssetBuilder(123123, CoinType.EOS.getTicker(), MarketType.UPBIT.getName(), 100000000.0, 1.2, LocalDate.now()),
-                this.userAssetBuilder(123123, CoinType.XRP.getTicker(), MarketType.UPBIT.getName(), 100000000.0, 1.2, LocalDate.now())
+//                this.userAssetBuilder(123123, "APENFT", MarketType.BITHUMB.getName(), 100000000.0, 1.2, LocalDate.now()),
+//                this.userAssetBuilder(123123, "BTC", MarketType.BITHUMB.getName(), 100000000.0, 1.2, LocalDate.now()),
+//                this.userAssetBuilder(123123, "ETH", MarketType.BITHUMB.getName(), 100000000.0, 1.2, LocalDate.now()),
+//                this.userAssetBuilder(123123, "KRW", MarketType.BITHUMB.getName(), 100000000.0, 1.2, LocalDate.now()),
+//                this.userAssetBuilder(123123, "LINK", MarketType.BITHUMB.getName(), 100000000.0, 1.2, LocalDate.now()),
+//                this.userAssetBuilder(123123, "SGB", MarketType.UPBIT.getName(), 100000000.0, 1.2, LocalDate.now()),
+//                this.userAssetBuilder(123123, "USDT", MarketType.UPBIT.getName(), 100000000.0, 1.2, LocalDate.now()),
+//                this.userAssetBuilder(123123, "WIN", MarketType.UPBIT.getName(), 100000000.0, 1.2, LocalDate.now()),
+//                this.userAssetBuilder(123123, CoinType.EOS.getTicker(), MarketType.UPBIT.getName(), 100000000.0, 1.2, LocalDate.now()),
+//                this.userAssetBuilder(123123, CoinType.XRP.getTicker(), MarketType.UPBIT.getName(), 100000000.0, 1.2, LocalDate.now())
         );
     }
 }

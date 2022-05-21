@@ -1,5 +1,6 @@
 package coinbuying.coinbuyingasset.service;
 
+import coinbuying.coinbuyingasset.dto.UpbitApiKey;
 import coinbuying.coinbuyingasset.dto.response.UpbitWalletCoinPriceDataResponse;
 import coinbuying.coinbuyingasset.dto.response.UpbitWalletData;
 import coinbuying.coinbuyingasset.dto.response.UserAssetOne;
@@ -9,7 +10,6 @@ import coinbuying.coinbuyingasset.entity.MarketType;
 import coinbuying.coinbuyingasset.entity.UserAsset;
 import coinbuying.coinbuyingasset.repository.CoinPriceRepository;
 import coinbuying.coinbuyingasset.repository.UserAssetRepository;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -25,24 +25,29 @@ import com.auth0.jwt.algorithms.Algorithm;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
 public class UpbitAssetServiceImpl implements AssetService<UpbitWalletData> {
     private final UserAssetRepository userAssetRepository;
     private final CoinPriceRepository coinPriceRepository;
+    private final UserApiKeyService<UpbitApiKey> upbitApiKeyService;
 
     @Autowired
-    public UpbitAssetServiceImpl(UserAssetRepository userAssetRepository, CoinPriceRepository coinPriceRepository) {
+    public UpbitAssetServiceImpl(UserAssetRepository userAssetRepository, CoinPriceRepository coinPriceRepository, UserApiKeyService<UpbitApiKey> upbitApiKeyService) {
         this.userAssetRepository = userAssetRepository;
         this.coinPriceRepository = coinPriceRepository;
+        this.upbitApiKeyService = upbitApiKeyService;
     }
 
     @Override
     public Mono<UpbitWalletData> getWallet(Integer userId) {
-        String accessKey = "sZiMJou0evyRRV3GB6Nrtgo1a9fuEU5OnSjBHRqM";//System.getenv("UPBIT_OPEN_API_ACCESS_KEY");
-        String secretKey = "898Usfgbf54lJDiVs7nBL3mHxLElrBoZRAPnW7dx";//System.getenv("UPBIT_OPEN_API_SECRET_KEY");
-        String serverUrl = "https://api.upbit.com";//System.getenv("UPBIT_OPEN_API_SERVER_URL");
+        // TODO : User DB or API 호출하여 키 조회 로직 추가 후 키 주입.
+        String accessKey = upbitApiKeyService.getKey().getSecretKey();
+        String secretKey = upbitApiKeyService.getKey().getAccessKey();
+
+        String serverUrl = "https://api.upbit.com";
 
         Algorithm algorithm = Algorithm.HMAC256(secretKey);
         String jwtToken = JWT.create()
@@ -50,16 +55,11 @@ public class UpbitAssetServiceImpl implements AssetService<UpbitWalletData> {
                 .withClaim("nonce", UUID.randomUUID().toString())
                 .sign(algorithm);
 
-        String authenticationToken = "Bearer " + jwtToken;
-
-        JSONObject jsonObj = null;
-        String retVal = "";
-
         WebClient webClient = WebClient.create(serverUrl + "/v1/accounts");
 
         return webClient.get()
                 .header("Content-Type", "application/json")
-                .header("Authorization", authenticationToken)
+                .header("Authorization", "Bearer " + jwtToken)
                 .retrieve()
                 .bodyToMono(UpbitWalletCoinPriceDataResponse[].class)
                 .map(priceDatas -> {
@@ -71,8 +71,7 @@ public class UpbitAssetServiceImpl implements AssetService<UpbitWalletData> {
     }
 
     @Override
-    public Flux<UserAsset> realTimePriceInjection(UpbitWalletData upbitWalletData) {
-        Arrays.sort(upbitWalletData.getPriceDatas(), (x, y) -> x.getCurrency().compareTo(y.getCurrency()));
+    public Flux<UserAsset> realTimePriceInjection(final UpbitWalletData upbitWalletData) {
         List<String> tickers = new ArrayList<>();
         HashMap<String, UpbitWalletCoinPriceDataResponse> priceMap = new HashMap<>();
         for (UpbitWalletCoinPriceDataResponse data : upbitWalletData.getPriceDatas()) {
@@ -85,18 +84,17 @@ public class UpbitAssetServiceImpl implements AssetService<UpbitWalletData> {
                                 .ticker(coinPrice.getTicker())
                                 .price(coinPrice.getPrice())
                                 .build());
-        Flux<UserAsset> selectUserAssetFlux = userAssetRepository.findByUserIdAndMarketAndInsertDt(
+
+        Flux<UserAsset> selectUserAssetFlux = userAssetRepository.findByUserIdAndMarket(
                 upbitWalletData.getUserId(),
-                MarketType.UPBIT.getName(),
-                LocalDate.now()
-        );
+                MarketType.UPBIT.getName());
+
         return Flux.merge(selectUserAssetFlux, selectCoinPriceFlux)
                 .groupBy(userAsset -> userAsset.getTicker())
                 .flatMap(groupedFlux -> groupedFlux.reduce((x, y) -> {
                     UserAsset wallet = x, price = y;
-                    if (x.getAssetId() == null) {
-                        wallet = y; price = x;
-                    }
+                    if (x.getAssetId() == null) wallet = y; price = x;
+
                     UpbitWalletCoinPriceDataResponse upbitWalletCoinPriceDataResponse = priceMap.get(wallet.getTicker());
                     return UserAsset.builder().assetId(wallet.getAssetId())
                             .ticker(wallet.getTicker())
@@ -125,13 +123,18 @@ public class UpbitAssetServiceImpl implements AssetService<UpbitWalletData> {
     }
 
     @Override
-    public void saveAssetData(Flux<UserAsset> userAssetFlux) {
-        userAssetFlux.doOnNext(userAsset -> userAssetRepository.save(userAsset).subscribe());
+    public void saveAssetData(List<UserAsset> userAssets) {
+        for(UserAsset userAsset : userAssets) {
+            userAssetRepository.save(userAsset).subscribe();
+        }
     }
 
     @Override
-    public Flux<UserAsset> addFilterUserShowData(Flux<UserAsset> userAssetFlux) {
-        return userAssetFlux.filter(userAsset -> userAsset.getVolume() > 0);
+    public List<UserAsset> addFilterUserShowData(List<UserAsset> userAssetFlux) {
+        return userAssetFlux.stream()
+                .filter(userAsset -> userAsset.getVolume() > 0)
+                .filter(userAsset -> userAsset.getPrice() > 0)
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -8,13 +8,13 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 public interface AssetService<T> {
-    public Mono<T> getWallet(Integer userId);
+    Mono<T> getWallet(Integer userId);
 
-    public Flux<UserAsset> realTimePriceInjection(T responses);
+    Flux<UserAsset> realTimePriceInjection(T responses);
 
-    public void saveAssetData(Flux<UserAsset> userAssets);
+    void saveAssetData(List<UserAsset> userAssets);
 
-    public Flux<UserAsset> addFilterUserShowData(Flux<UserAsset> userAssetFlux);
+    List<UserAsset> addFilterUserShowData(List<UserAsset> userAssets);
 
-    public UserAssetResponse userAssetsToUserAssetResponse(List<UserAsset> userAssets);
+    UserAssetResponse userAssetsToUserAssetResponse(List<UserAsset> userAssets);
 }

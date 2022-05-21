@@ -10,5 +10,5 @@ import java.util.List;
 
 public interface UserAssetRepository extends ReactiveCrudRepository<UserAsset, Long> {
     Flux<UserAsset> findByUserIdAndInsertDt(int userId, LocalDate insertDt);
-    Flux<UserAsset> findByUserIdAndMarketAndInsertDt(int userId, String market, LocalDate insertDt);
+    Flux<UserAsset> findByUserIdAndMarket(int userId, String market);
 }
