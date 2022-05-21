@@ -2,7 +2,7 @@ package coinbuying.coinbuyingasset.service;
 
 import coinbuying.coinbuyingasset.dto.UpbitApiKey;
 import coinbuying.coinbuyingasset.dto.response.UpbitWalletCoinPriceDataResponse;
-import coinbuying.coinbuyingasset.dto.response.UpbitWalletData;
+import coinbuying.coinbuyingasset.dto.UpbitWalletData;
 import coinbuying.coinbuyingasset.dto.response.UserAssetOne;
 import coinbuying.coinbuyingasset.dto.response.UserAssetResponse;
 
@@ -93,7 +93,8 @@ public class UpbitAssetServiceImpl implements AssetService<UpbitWalletData> {
                 .groupBy(userAsset -> userAsset.getTicker())
                 .flatMap(groupedFlux -> groupedFlux.reduce((x, y) -> {
                     UserAsset wallet = x, price = y;
-                    if (x.getAssetId() == null) wallet = y; price = x;
+                    if (x.getAssetId() == null) wallet = y;
+                    price = x;
 
                     UpbitWalletCoinPriceDataResponse upbitWalletCoinPriceDataResponse = priceMap.get(wallet.getTicker());
                     return UserAsset.builder().assetId(wallet.getAssetId())
@@ -110,7 +111,7 @@ public class UpbitAssetServiceImpl implements AssetService<UpbitWalletData> {
                         .insertDt(userAsset.getInsertDt())
                         .market(MarketType.UPBIT.getName()).build())
                 .map(userAsset -> {
-                    if(userAsset.getVolume() == null || !priceMap.containsKey(userAsset.getTicker()))
+                    if (userAsset.getVolume() == null || !priceMap.containsKey(userAsset.getTicker()))
                         return UserAsset.builder().assetId(userAsset.getAssetId())
                                 .userId(upbitWalletData.getUserId())
                                 .price(userAsset.getPrice())
@@ -123,15 +124,20 @@ public class UpbitAssetServiceImpl implements AssetService<UpbitWalletData> {
     }
 
     @Override
+    public Mono<List<UserAsset>> fluxCollectToMonoList(Flux<UserAsset> userAssetFlux) {
+        return userAssetFlux.collectList();
+    }
+
+    @Override
     public void saveAssetData(List<UserAsset> userAssets) {
-        for(UserAsset userAsset : userAssets) {
+        for (UserAsset userAsset : userAssets) {
             userAssetRepository.save(userAsset).subscribe();
         }
     }
 
     @Override
-    public List<UserAsset> addFilterUserShowData(List<UserAsset> userAssetFlux) {
-        return userAssetFlux.stream()
+    public List<UserAsset> UserResponseAssetDataFilter(List<UserAsset> userAssets) {
+        return userAssets.parallelStream()
                 .filter(userAsset -> userAsset.getVolume() > 0)
                 .filter(userAsset -> userAsset.getPrice() > 0)
                 .collect(Collectors.toList());
@@ -139,15 +145,14 @@ public class UpbitAssetServiceImpl implements AssetService<UpbitWalletData> {
 
     @Override
     public UserAssetResponse userAssetsToUserAssetResponse(List<UserAsset> userAssets) {
-        List<UserAssetOne> userAssetOnes = new ArrayList<>();
-        for(UserAsset userAsset : userAssets) {
-            userAssetOnes.add(UserAssetOne.builder()
-                    .ticker(userAsset.getTicker())
-                    .market(userAsset.getMarket())
-                    .price(userAsset.getPrice())
-                    .volume(userAsset.getVolume())
-                    .total(userAsset.getPrice() * userAsset.getVolume()).build());
-        }
-        return UserAssetResponse.CreateUserAssetResponse(LocalDate.now(), userAssetOnes);
+        return UserAssetResponse.CreateUserAssetResponse(LocalDate.now(),
+                userAssets.parallelStream()
+                        .map(userAsset -> UserAssetOne.builder()
+                                .ticker(userAsset.getTicker())
+                                .market(userAsset.getMarket())
+                                .price(userAsset.getPrice())
+                                .volume(userAsset.getVolume())
+                                .total(userAsset.getPrice() * userAsset.getVolume()).build())
+                        .collect(Collectors.toList()));
     }
 }
